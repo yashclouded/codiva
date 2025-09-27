@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Codiva Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/codiva"
+      ],
+      "cwd": "${workspaceFolder}/codiva",
+      "outFiles": [
+        "${workspaceFolder}/codiva/dist/**/*.js"
+      ],
+      "preLaunchTask": "Build Codiva (Nested)",
+      "sourceMaps": true,
+      "smartStep": true,
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
