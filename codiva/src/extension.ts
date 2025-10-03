@@ -1,11 +1,11 @@
+import { queryObjects } from 'v8';
 import * as vscode from 'vscode';
-import * as https from 'https';
 
 type DayRecord = { 
   added: number; 
   removed: number; 
   touched?: boolean;
-  languages: Record<string, number>; // Track lines per language
+  languages: Record<string, number>; // tracks lines per language coded
   sessions: number; // Coding sessions
   timeSpent: number; // Minutes spent coding
   commits?: number; // Git commits
@@ -26,7 +26,7 @@ type Achievement = {
   category: 'streak' | 'productivity' | 'mastery' | 'social' | 'special';
   rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'champion';
   unlockedAt?: Date;
-  progress: number; // 0-100
+  progress: number; 
   target: number;
 };
 
@@ -167,7 +167,7 @@ type CodivaStats = {
   favoriteLanguage: string;
   
   
-  // !Analytics
+  //Analytics
 
 
   mostProductiveHour: number; // 0-23
@@ -232,7 +232,7 @@ function getFlowTips(flowMetrics: NonNullable<CodingSession['flowMetrics']>): st
   } else if (flowMetrics.flowScore >= 50) {
     tips.push('📈 <strong>Improving flow.</strong> Try reducing interruptions.');
   } else {
-    tips.push('🎯 <strong>Focus opportunity.</strong> Try longer uninterrupted periods.');
+    tips.push('<strong>Focus opportunity.</strong> Try longer uninterrupted periods.');
   }
 
   if (flowMetrics.interruptions > 3) {
@@ -277,10 +277,8 @@ function calculateFlowMetrics(session: CodingSession, editTimestamps: number[], 
     gaps.push((editTimestamps[i] - editTimestamps[i - 1]) / 1000);
   }
 
-  // Count interruptions (gaps > 2 minutes)
   const interruptions = gaps.filter(gap => gap > 120).length;
   
-  // Count typing bursts (continuous periods with gaps < 30 seconds)
   let typingBursts = 0;
   let currentBurstStart = 0;
   let longestBurst = 0;
@@ -296,7 +294,8 @@ function calculateFlowMetrics(session: CodingSession, editTimestamps: number[], 
     }
   }
   
-  // Don't forget the last burst
+
+
   if (editTimestamps.length - 1 > currentBurstStart) {
     typingBursts++;
     const burstDuration = (editTimestamps[editTimestamps.length - 1] - editTimestamps[currentBurstStart]) / (1000 * 60);
@@ -306,7 +305,7 @@ function calculateFlowMetrics(session: CodingSession, editTimestamps: number[], 
   const averageGapTime = gaps.length > 0 ? gaps.reduce((a, b) => a + b, 0) / gaps.length : 0;
   const fileSwitches = Math.max(0, fileSet.size - 1);
 
-  // Calculate flow score (0-100)
+  // Calculate flow score (out of 100)
   let flowScore = 50; // Base score
   
   // Penalty for interruptions (each interruption -10 points)
@@ -535,11 +534,13 @@ export function activate(context: vscode.ExtensionContext) {
             stats.projectStats[projectName].languages.push(language);
           }
           
-          // Update favorite language
+          // Update the favorite language
           const topLang = Object.entries(stats.languageStats)
             .sort(([,a], [,b]) => b.lines - a.lines)[0];
           if (topLang) stats.favoriteLanguage = topLang[0];
         }
+
+
         
         if (removed > 0) {
           stats.deletedLines += removed;
@@ -551,6 +552,8 @@ export function activate(context: vscode.ExtensionContext) {
         
         
         // Session management in the program
+        // Start a new session if none exists or if last edit was >30 min ago
+
 
         if (!stats.currentSession || 
             (now.getTime() - stats.currentSession.start.getTime()) > 30 * 60 * 1000) { // 30 min gap = new session
@@ -625,6 +628,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         const previousStreak = stats.streak;
         // Streak from history
+    
         stats.streak = computeConsecutiveStreak(stats.history);
         stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
 

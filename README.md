@@ -1,30 +1,25 @@
-# 🎮 Codiva - Code Activity Tracker & Gamification
+# Codiva - Code Activity Tracker & Gamification
 
 Transform your coding journey into an epic adventure! Codiva gamifies your development workflow with XP systems, achievement unlocks, streak tracking, and beautiful analytics - making coding more engaging and productive than ever.
 
-## ✨ Features
+## Features
 
-### 🎯 **Core Gamification**
+### **Core Gamification**
 - **XP & Leveling**: Earn 10 XP per meaningful line of code (anti-spam protected)
 - **Daily Streaks**: Build consecutive coding habits with streak tracking
 - **16 Achievements**: Unlock badges across 5 categories (Streak, Productivity, Mastery, Social, Special)
 - **Weekly Challenges**: Rotating challenges with XP rewards (500-1500 XP)
 - **Smart Anti-Spam**: Only meaningful code contributions count toward progress
 
-### 📊 **Advanced Analytics**
-- **GitHub-Style Heatmap**: 365-day contribution calendar showing coding activity
+###  **Advanced Analytics**
+- **Heatmap**: 365-day contribution calendar showing coding activity
 - **Language Breakdown**: Track progress across different programming languages
 - **Session Analytics**: Monitor coding sessions, time spent, and productivity patterns
 - **Productivity Insights**: Discover your most productive hours and coding patterns
 
-### 🎨 **Beautiful Dashboard**
-- **Modern UI**: GitHub + Duolingo inspired design with dark theme
-- **Real-time Progress**: Live XP progress bars and achievement tracking
-- **Interactive Elements**: Hover effects, animations, and responsive design
-- **Personalization**: Custom user names and personalized greetings
 
-### 🔔 **Smart Notifications**
-- **Achievement Unlocks**: Celebrate milestones with popup notifications
+### **Smart Notifications**
+- **Achievement Unlocks**: Celebrate milestones with popup notifications (and confetti celebration)
 - **Daily Goal Reminders**: Stay motivated with gentle evening reminders
 - **Streak Protection**: Avoid breaking your coding streak
 - **Challenge Completions**: Get notified when you complete weekly challenges
