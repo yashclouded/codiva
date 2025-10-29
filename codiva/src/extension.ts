@@ -309,7 +309,7 @@ function calculateFlowMetrics(session: CodingSession, editTimestamps: number[], 
   let flowScore = 50; // Base score
   
   // Penalty for interruptions (each interruption -10 points)
-  flowScore -= Math.min(50, interruptions * 10);
+  flowScore -= Math.max(50, interruptions * 10);
   
   // Penalty for excessive file switching (-5 points per switch beyond 2)
   flowScore -= Math.max(0, (fileSwitches - 2) * 5);
@@ -3217,16 +3217,20 @@ function initializeAchievements(): Achievement[] {
     { id: 'streak-warrior', title: 'Streak Warrior', description: 'Maintain a 7-day coding streak', icon: 'streak-warrior', category: 'streak', rarity: 'rare', progress: 0, target: 7 },
     { id: 'streak-legend', title: 'Streak Legend', description: 'Maintain a 30-day coding streak', icon: 'streak-legend', category: 'streak', rarity: 'epic', progress: 0, target: 30 },
     { id: 'century-streak', title: 'Century Streak', description: 'Maintain a 100-day coding streak', icon: 'century-streak', category: 'streak', rarity: 'legendary', progress: 0, target: 100 },
+    { id: 'yearly-streak', title: 'Yearly Streak', description: 'Maintain a 365-day coding streak', icon: 'century-streak', category: 'streak', rarity: 'legendary', progress: 0, target: 365 },
     
     
     // Productivity category  
     { id: 'speed-demon', title: 'Speed Demon', description: 'Write 100 lines in a single session', icon: 'speed-demon', category: 'productivity', rarity: 'rare', progress: 0, target: 100 },
+    { id: 'master-speed-demon', title: 'Master Speed Demon', description: 'Write 1,000 lines in a single session', icon: 'speed-demon', category: 'productivity', rarity: 'epic', progress: 0, target: 1000 },
     { id: 'marathon-coder', title: 'Marathon Coder', description: 'Code for 4 hours straight', icon: 'marathon-coder', category: 'productivity', rarity: 'epic', progress: 0, target: 240 },
     { id: 'early-bird', title: 'Early Bird', description: 'Code before 6 AM', icon: 'early-bird', category: 'productivity', rarity: 'common', progress: 0, target: 1 },
     { id: 'weekend-warrior', title: 'Weekend Warrior', description: 'Code on weekends', icon: 'weekend-warrior', category: 'productivity', rarity: 'common', progress: 0, target: 2 },
     
     // Mastery category
     { id: 'polyglot', title: 'Polyglot', description: 'Code in 5 different languages', icon: 'polyglot', category: 'mastery', rarity: 'epic', progress: 0, target: 5 },
+    { id: 'advanced-polyglot', title: 'Advanced Polyglot', description: 'Code in 10 different languages', icon: 'polyglot', category: 'mastery', rarity: 'epic', progress: 0, target: 10 },
+    { id: 'master-polyglot', title: 'Master Polyglot', description: 'Code in 20 different languages', icon: 'polyglot', category: 'mastery', rarity: 'epic', progress: 0, target: 20 },
     { id: 'master-builder', title: 'Master Builder', description: 'Write 10,000 lines of code', icon: 'master-builder', category: 'mastery', rarity: 'legendary', progress: 0, target: 10000 },
     { id: 'perfectionist', title: 'Perfectionist', description: 'Delete more lines than you write in a day', icon: 'perfectionist', category: 'mastery', rarity: 'rare', progress: 0, target: 1 },
     
@@ -3302,9 +3306,16 @@ function updateAchievements(stats: CodivaStats) {
       case 'century-streak':
         achievement.progress = Math.min(100, (stats.streak / 100) * 100);
         break;
+      case 'yearly-streak':
+        achievement.progress = Math.min(100, (stats.streak / 365) * 100);
+        break;
       case 'speed-demon':
         const sessionLines = stats.currentSession?.lines || 0;
         achievement.progress = Math.min(100, (sessionLines / 100) * 100);
+        break;
+      case 'master-speed-demon':
+        const sessionLines = stats.currentSession?.lines || 0;
+        achievement.progress = Math.min(100, (sessionLines / 1000) * 100);
         break;
       case 'marathon-coder':
         const sessionTime = stats.currentSession ? 
@@ -3317,6 +3328,14 @@ function updateAchievements(stats: CodivaStats) {
       case 'polyglot':
         const languageCount = Object.keys(stats.languageStats).length;
         achievement.progress = Math.min(100, (languageCount / 5) * 100);
+        break;
+      case 'advanced-polyglot':
+        const languageCount = Object.keys(stats.languageStats).length;
+        achievement.progress = Math.min(100, (languageCount / 10) * 100);
+        break;
+      case 'master-polyglot':
+        const languageCount = Object.keys(stats.languageStats).length;
+        achievement.progress = Math.min(100, (languageCount / 20) * 100);
         break;
       case 'master-builder':
         achievement.progress = Math.min(100, (stats.manualLines / 10000) * 100);
