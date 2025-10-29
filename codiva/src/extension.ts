@@ -898,7 +898,7 @@ function getWebviewContent(
   imgs: { imgLevelUp: string; imgMedal: string; imgStar: string; imgFlame: string; imgCheck: string; achievementIcons: Record<string,string> }
 ) {
   const xpNeeded = stats.level * 100;
-  const xpProgress = Math.max(0, Math.min(100, Math.floor((stats.xp / xpNeeded) * 100)));
+  const xpProgress = Math.max(0, Math.min(100, Number(((stats.xp / xpNeeded) * 100).toFixed(2))));
   const heatmapData = generateHeatmapData(stats.history);
   const challengeProgress = stats.weeklyChallenge ? Math.min(100, (stats.weeklyChallenge.progress / stats.weeklyChallenge.target) * 100) : 0;
   const improvementSnapshot = computeImprovementSnapshot(stats);
