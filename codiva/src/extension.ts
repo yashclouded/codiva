@@ -3536,7 +3536,6 @@ function updateDailyChallenge(stats: CodivaStats) {
   // Create new challenge if none exists or day changed
   if (!stats.dailyChallenge || stats.dailyChallenge.dayStart !== today) {
     stats.dailyChallenge = generateDailyChallenge();
-    stats.dailyChallenge.dayStart = today;
   }
 
   const challenge = stats.dailyChallenge;
@@ -3556,7 +3555,7 @@ function updateDailyChallenge(stats: CodivaStats) {
       break;
     case 'flow':
       const currentFlowScore = stats.currentSession?.flowMetrics?.flowScore || 0;
-      challenge.progress = currentFlowScore >= 80 ? 1 : 0;
+      challenge.progress = Math.max(challenge.progress, currentFlowScore >= 80 ? 1 : 0);
       break;
   }
 
