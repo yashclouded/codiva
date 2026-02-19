@@ -42,6 +42,18 @@ type WeeklyChallenge = {
   reward: number; // XP reward
 };
 
+type DailyChallenge = {
+  id: string;
+  title: string;
+  description: string;
+  target: number;
+  progress: number;
+  type: 'lines' | 'languages' | 'time' | 'flow';
+  dayStart: string; // ISO date
+  completed: boolean;
+  reward: number; // XP reward
+};
+
 type CodingSession = {
   start: Date;
   end?: Date;
@@ -144,6 +156,7 @@ type CodivaStats = {
   badges: Badge[];
   newAchievements: Achievement[];
   weeklyChallenge?: WeeklyChallenge;
+  dailyChallenge?: DailyChallenge;
   history: Record<string, DayRecord>;
   languageStats: Record<string, { lines: number; sessions: number; timeSpent: number }>;
   projectStats: Record<string, { lines: number; sessions: number; timeSpent: number; languages: string[]; lastWorked: Date; files: Set<string> }>;
@@ -652,6 +665,7 @@ export function activate(context: vscode.ExtensionContext) {
         // Enhanced achievements and challenges
         updateAchievements(stats);
         updateWeeklyChallenge(stats);
+        updateDailyChallenge(stats);
         evaluateAchievements(stats, now);
         
         // Smart notifications
@@ -901,6 +915,7 @@ function getWebviewContent(
   const xpProgress = Math.max(0, Math.min(100, Number(((stats.xp / xpNeeded) * 100).toFixed(2))));
   const heatmapData = generateHeatmapData(stats.history);
   const challengeProgress = stats.weeklyChallenge ? Math.min(100, (stats.weeklyChallenge.progress / stats.weeklyChallenge.target) * 100) : 0;
+  const dailyChallengeProgress = stats.dailyChallenge ? Math.min(100, (stats.dailyChallenge.progress / stats.dailyChallenge.target) * 100) : 0;
   const improvementSnapshot = computeImprovementSnapshot(stats);
   
   // Generate heatmap grid with detailed tooltips
@@ -2095,6 +2110,21 @@ ${languages} language${languages !== 1 ? 's' : ''}` : ''}`;
               ${stats.weeklyChallenge.progress}/${stats.weeklyChallenge.target} • ${challengeProgress.toFixed(0)}% complete
             </div>
             ${stats.weeklyChallenge.completed ? '<div style="text-align: center; margin-top: 8px; color: #3fb950;">Challenge Complete! +' + stats.weeklyChallenge.reward + ' XP</div>' : ''}
+          </div>
+          ` : ''}
+
+          <!-- Daily Challenge -->
+          ${stats.dailyChallenge ? `
+          <div class="card challenge-card">
+            <div class="challenge-title">${stats.dailyChallenge.title}</div>
+            <div class="challenge-desc">${stats.dailyChallenge.description}</div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${dailyChallengeProgress}%"></div>
+            </div>
+            <div style="text-align: center; margin-top: 8px;">
+              ${stats.dailyChallenge.progress}/${stats.dailyChallenge.target} • ${dailyChallengeProgress.toFixed(0)}% complete
+            </div>
+            ${stats.dailyChallenge.completed ? '<div style="text-align: center; margin-top: 8px; color: #3fb950;">Challenge Complete! +' + stats.dailyChallenge.reward + ' XP</div>' : ''}
           </div>
           ` : ''}
 
@@ -3481,6 +3511,70 @@ function updateWeeklyChallenge(stats: CodivaStats) {
   }
 }
 
+function generateDailyChallenge(): DailyChallenge {
+  const challenges = [
+    { id: 'daily-lines', title: 'Daily Coder', description: 'Write 50 lines today', target: 50, type: 'lines' as const, reward: 150 },
+    { id: 'daily-languages', title: 'Language Switcher', description: 'Code in 2 different languages today', target: 2, type: 'languages' as const, reward: 200 },
+    { id: 'daily-time', title: 'Hour Power', description: 'Code for 1 hour today', target: 60, type: 'time' as const, reward: 250 },
+    { id: 'daily-flow', title: 'Flow State', description: 'Achieve a session with 80+ flow score today', target: 1, type: 'flow' as const, reward: 300 }
+  ];
+
+  const challenge = challenges[Math.floor(Math.random() * challenges.length)];
+  const today = toDateKey(new Date());
+
+  return {
+    ...challenge,
+    progress: 0,
+    dayStart: today,
+    completed: false
+  };
+}
+
+function updateDailyChallenge(stats: CodivaStats) {
+  const today = toDateKey(new Date());
+
+  // Create new challenge if none exists or day changed
+  if (!stats.dailyChallenge || stats.dailyChallenge.dayStart !== today) {
+    stats.dailyChallenge = generateDailyChallenge();
+  }
+
+  const challenge = stats.dailyChallenge;
+  if (challenge.completed) return;
+
+  // Update progress based on challenge type
+  const todayRecord = stats.history[today];
+  switch (challenge.type) {
+    case 'lines':
+      challenge.progress = todayRecord ? todayRecord.added : 0;
+      break;
+    case 'languages':
+      challenge.progress = todayRecord && todayRecord.languages ? Object.keys(todayRecord.languages).length : 0;
+      break;
+    case 'time':
+      challenge.progress = todayRecord ? todayRecord.timeSpent : 0;
+      break;
+    case 'flow':
+      const currentFlowScore = stats.currentSession?.flowMetrics?.flowScore || 0;
+      challenge.progress = Math.max(challenge.progress, currentFlowScore >= 80 ? 1 : 0);
+      break;
+  }
+
+  // Check completion
+  if (challenge.progress >= challenge.target && !challenge.completed) {
+    challenge.completed = true;
+    vscode.window.showInformationMessage(
+      `Daily Challenge Complete: ${challenge.title}! +${challenge.reward} XP`,
+      'View Dashboard'
+    ).then(selection => {
+      if (selection) {
+        vscode.commands.executeCommand('codiva.showDashboard');
+      }
+    });
+    stats.xp += challenge.reward;
+    stats.totalXp += challenge.reward;
+  }
+}
+
 // GitHub-style heatmap data generation with detailed info
 function generateHeatmapData(history: Record<string, DayRecord>, days: number = 365): Array<{date: string, count: number, level: number, timeSpent: number, sessions: number}> {
   const data = [];
@@ -3843,6 +3937,7 @@ function saveStats(context: vscode.ExtensionContext, stats: CodivaStats) {
       badges: stats.badges,
       newAchievements: stats.newAchievements,
       weeklyChallenge: stats.weeklyChallenge,
+      dailyChallenge: stats.dailyChallenge,
       history: stats.history,
       languageStats: stats.languageStats,
       totalSessions: stats.totalSessions,
